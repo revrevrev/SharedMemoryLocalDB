@@ -1,0 +1,126 @@
+openapi: "3.1.0"
+info:
+  title: SharedMemoryLocalDB
+  version: "1.0.0"
+  description: >
+    Persistent memory store for custom GPTs. Each namespace is an isolated,
+    append-only log of JSON entries. Use this to share knowledge across sessions
+    and between different GPTs on the same machine.
+
+servers:
+  - url: https://YOUR_PUBLIC_HOST_HERE
+    description: >
+      Replace with your public HTTPS URL (e.g. from ngrok: https://xxxx.ngrok-free.app)
+
+components:
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://YOUR_PUBLIC_HOST_HERE/oauth/token
+          scopes: {}
+
+  schemas:
+    Entry:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Auto-generated unique ID for this entry
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 UTC timestamp of when the entry was created
+        payload:
+          type: object
+          description: The free-form JSON content written by the GPT
+
+    NamespaceResponse:
+      type: object
+      properties:
+        namespace:
+          type: string
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/Entry"
+
+security:
+  - oauth2: []
+
+paths:
+  /api/namespaces/{name}:
+    get:
+      operationId: getNamespace
+      summary: Retrieve all entries in a namespace
+      description: >
+        Returns all memory entries stored under the given namespace name.
+        Returns an empty list if the namespace does not exist yet.
+      parameters:
+        - name: name
+          in: path
+          required: true
+          description: Namespace identifier (letters, numbers, hyphens, underscores only)
+          schema:
+            type: string
+            pattern: "^[a-zA-Z0-9_-]+$"
+      responses:
+        "200":
+          description: Successfully retrieved entries
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NamespaceResponse"
+        "400":
+          description: Invalid namespace name
+        "401":
+          description: Unauthorized
+
+    post:
+      operationId: appendEntry
+      summary: Append a new memory entry to a namespace
+      description: >
+        Appends a new entry to the namespace's log. The server automatically
+        adds a unique ID and timestamp. The namespace file is created if it
+        does not exist yet.
+      parameters:
+        - name: name
+          in: path
+          required: true
+          description: Namespace identifier (letters, numbers, hyphens, underscores only)
+          schema:
+            type: string
+            pattern: "^[a-zA-Z0-9_-]+$"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: >
+                Free-form JSON object to store. Can include any fields relevant
+                to the GPT's memory (e.g. facts, summaries, user preferences).
+            examples:
+              fact:
+                summary: Store a fact
+                value:
+                  fact: "User prefers metric units"
+                  category: "preferences"
+              summary:
+                summary: Store a session summary
+                value:
+                  summary: "Discussed project architecture"
+                  tags: ["architecture", "planning"]
+      responses:
+        "201":
+          description: Entry created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Entry"
+        "400":
+          description: Invalid namespace name or request body
+        "401":
+          description: Unauthorized
