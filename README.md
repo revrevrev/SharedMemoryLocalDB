@@ -138,12 +138,26 @@ Namespace names may only contain letters, numbers, hyphens, and underscores.
 
 ---
 
+## Deployment model
+
+Each user runs their own server instance on their own machine. User isolation is provided by deployment — separate `data/` directories, separate credentials, and separate tunnel URLs. No shared server, no user registration.
+
+Use a distinct namespace name per GPT to keep memories separate (e.g. `cooking-gpt`, `code-assistant`).
+
+---
+
 ## Connecting to a Custom GPT
 
-GPT Actions require a public HTTPS URL. For local development, use [ngrok](https://ngrok.com):
+GPT Actions require a public HTTPS URL. Expose your local server with a tunnel:
 
+**Option A — ngrok** (free static domain available):
 ```bash
-npx ngrok http 3000
+ngrok http --domain=yourname.ngrok-free.app 3000
+```
+
+**Option B — Cloudflare Tunnel** (free, no session timeouts):
+```bash
+cloudflared tunnel --url http://localhost:3000
 ```
 
 ### Steps in GPT Builder
