@@ -3,3 +3,4 @@ dist/
 data/
 .env
 TODO.md
+openapi.yaml

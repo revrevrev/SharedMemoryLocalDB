@@ -6,7 +6,7 @@ const router = Router();
 router.use(authenticate);
 
 router.get('/:name', (req: Request, res: Response) => {
-  const { name } = req.params as { name: string };
+  const name = (req.params as { name: string }).name.replace(/ /g, '_');
   try {
     validateNamespaceName(name);
   } catch {
@@ -19,7 +19,7 @@ router.get('/:name', (req: Request, res: Response) => {
 });
 
 router.post('/:name', (req: Request, res: Response) => {
-  const { name } = req.params as { name: string };
+  const name = (req.params as { name: string }).name.replace(/ /g, '_');
   try {
     validateNamespaceName(name);
   } catch {

@@ -8,6 +8,8 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+app.get('/', (_req: Request, res: Response) => res.json({ status: 'ok' }));
+
 app.use('/oauth', authRouter);
 app.use('/api/namespaces', namespacesRouter);
 

@@ -8,7 +8,7 @@ info:
     and between different GPTs on the same machine.
 
 servers:
-  - url: https://unconcreted-supereligible-madalynn.ngrok-free.dev
+  - url: https://YOUR_PUBLIC_HOST_HERE
     description: >
       Replace with your public HTTPS URL (e.g. from ngrok: https://xxxx.ngrok-free.app)
 
@@ -18,8 +18,8 @@ components:
       type: oauth2
       flows:
         authorizationCode:
-          authorizationUrl: https://unconcreted-supereligible-madalynn.ngrok-free.dev/oauth/authorize
-          tokenUrl: https://unconcreted-supereligible-madalynn.ngrok-free.dev/oauth/token
+          authorizationUrl: https://YOUR_PUBLIC_HOST_HERE/oauth/authorize
+          tokenUrl: https://YOUR_PUBLIC_HOST_HERE/oauth/token
           scopes: {}
 
   schemas:

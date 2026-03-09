@@ -3,6 +3,7 @@
 ## What this project is
 
 A local Node.js + Express + TypeScript API server that gives custom GPTs (OpenAI GPT Actions) persistent memory across sessions. Each GPT writes to a named **namespace** — stored as a JSON file on disk — and reads it back in any future session.
+Important: The custom GPT should remain stable and not have to be reconfigured to update stuff like URLs, tokens etc. The solution shouldn't break this assumption.
 
 ## Tech stack
 
@@ -97,12 +98,15 @@ Each namespace is stored at `data/<name>.json` as a JSON array:
 
 ## Connecting to GPT Actions
 
-1. Expose the server publicly via a tunnel. Two good options:
-   - **ngrok** (free static domain): `ngrok http --domain=yourname.ngrok-free.app 3000`
-   - **Cloudflare Tunnel** (free, no session limits): `cloudflared tunnel --url http://localhost:3000`
-2. Replace `YOUR_PUBLIC_HOST_HERE` in `openapi.yaml` with the public URL
+Use **ngrok with a free static domain** — the URL never changes, no domain purchase needed:
+
+1. Create account at ngrok.com → claim one free static domain → `ngrok config add-authtoken <token>`
+2. Update both URLs in `openapi.yaml` (`servers[0].url` and `tokenUrl`) with the static domain
 3. In GPT Builder → Actions: paste `openapi.yaml`, set auth to OAuth / Client Credentials / POST body
-4. Client ID and Secret must match the values in `.env`
+4. To run: `ngrok http --domain=yourname.ngrok-free.app 3000`
+
+The ngrok interstitial only affects browser visits — ChatGPT's server-to-server API calls bypass it.
+A `GET /` health check route exists in `app.ts` to satisfy any reachability checks ChatGPT performs.
 
 ## Files NOT to modify carelessly
 

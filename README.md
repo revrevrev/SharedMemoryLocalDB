@@ -148,31 +148,38 @@ Use a distinct namespace name per GPT to keep memories separate (e.g. `cooking-g
 
 ## Connecting to a Custom GPT
 
-GPT Actions require a public HTTPS URL. Expose your local server with a tunnel:
+GPT Actions require a public HTTPS URL. Use **ngrok** with a free static domain — the URL never changes, so GPT Builder is configured once and never touched again.
 
-**Option A — ngrok** (free static domain available):
+### One-time ngrok setup
+
+1. Create a free account at https://ngrok.com
+2. Copy your auth token from the ngrok dashboard and run:
+   ```bash
+   ngrok config add-authtoken <your-token>
+   ```
+3. In the ngrok dashboard → **Domains** → claim your free static domain (e.g. `yourname.ngrok-free.app`)
+4. Update `openapi.yaml` — replace the host in both `servers[0].url` and `tokenUrl` with your static domain
+
+### Steps in GPT Builder (one-time per GPT)
+
+1. Go to **Configure → Actions → Create new action**
+2. Paste the contents of [`openapi.yaml`](openapi.yaml) into the schema field
+3. Set **Authentication** to **OAuth**
+4. Fill in:
+   - **Client ID** — matches `OAUTH_CLIENT_ID` in `.env`
+   - **Client Secret** — matches `OAUTH_CLIENT_SECRET` in `.env`
+   - **Token URL** — `https://<your-static-domain>/oauth/token`
+   - **Token Exchange Method** — POST request body
+5. Leave **Scope** empty
+6. Save and test
+
+### Running the tunnel
+
 ```bash
 ngrok http --domain=yourname.ngrok-free.app 3000
 ```
 
-**Option B — Cloudflare Tunnel** (free, no session timeouts):
-```bash
-cloudflared tunnel --url http://localhost:3000
-```
-
-### Steps in GPT Builder
-
-1. Go to **Configure → Actions → Create new action**
-2. Paste the contents of [`openapi.yaml`](openapi.yaml) into the schema field
-3. Replace `YOUR_PUBLIC_HOST_HERE` with your ngrok (or production) URL — in both the `servers` section and the `tokenUrl`
-4. Set **Authentication** to **OAuth**
-5. Fill in:
-   - **Client ID** — matches `OAUTH_CLIENT_ID` in `.env`
-   - **Client Secret** — matches `OAUTH_CLIENT_SECRET` in `.env`
-   - **Token URL** — `https://<your-host>/oauth/token`
-   - **Token Exchange Method** — POST request body
-6. Leave **Scope** empty
-7. Save and test
+The URL never changes — GPT Builder needs no updates after initial setup.
 
 ### GPT system prompt example
 
