@@ -13,6 +13,48 @@ GPT Action  →  POST /oauth/token         →  JWT access token
 GPT Action  →  POST /api/namespaces/my-gpt  →  append a memory entry
 GPT Action  →  GET  /api/namespaces/my-gpt  →  retrieve all entries
 ```
+Flow high level explanation
+── ONE-TIME SETUP (first use per device) ──────────────────────────
+
+You open ChatGPT → it redirects your browser to ngrok → your server
+    │
+    │  "Here's a one-time code, send it back to ChatGPT"
+    ▼
+ChatGPT exchanges the code for a JWT token
+    │
+    │  "I'll keep this token and reuse it from now on"
+    ▼
+Token stored by ChatGPT (valid for 1 hour, then re-fetched silently)
+
+── EVERY SAVE ─────────────────────────────────────────────────────
+
+ChatGPT decides something is worth remembering
+    │  HTTPS + JWT token — internet
+    ▼
+ngrok (cloud relay)
+    │  HTTP — your local network
+    ▼
+Your Express server — checks token, appends entry
+    │  file write
+    ▼
+data/namespace.json (your disk)
+
+── EVERY LOAD ─────────────────────────────────────────────────────
+
+New chat session starts → GPT fetches previous memories
+    │  HTTPS + JWT token — internet
+    ▼
+ngrok (cloud relay)
+    │  HTTP — your local network
+    ▼
+Your Express server — checks token, reads file
+    │  returns JSON array of all past entries
+    ▼
+ChatGPT receives the entries, summarizes them into context
+    │
+    ▼
+You — the GPT already "knows" everything it previously saved
+
 
 Each namespace is stored as a plain JSON file at `data/<name>.json`. Entries are append-only — every write adds a new record with a UUID and timestamp. The payload is whatever JSON the GPT sends.
 
